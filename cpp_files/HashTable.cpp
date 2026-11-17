@@ -1,10 +1,11 @@
 #include "../h_files/HashTable.h"
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
 
 using namespace std;
 
-// Вычисление хеш-кода для строки=
+// Вычисление хеш-кода для строки
 size_t HashTable::hash_function(const string& key) const {
     size_t hash = 0;
     for (char c : key) {
@@ -166,4 +167,98 @@ void HashTable::print() const {
         }
     }
     cout << "}\n";
+}
+// Текстовая сериализация
+void HashTable::serialize_text(const string& filename) const {
+    ofstream out(filename);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open file for writing");
+    }
+
+    // Записываем общее количество пар (ключ-значение)
+    out << size << "\n";
+
+    // Проходим по всем корзинам и по цепочкам коллизий внутри них
+    for (size_t i = 0; i < capacity; ++i) {
+        Node* curr = buckets[i];
+        while (curr != nullptr) {
+            out << curr->key << "\n";
+            out << curr->value << "\n";
+            curr = curr->next;
+        }
+    }
+}
+
+// Текстовая десериализация
+void HashTable::deserialize_text(const string& filename) {
+    ifstream in(filename);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    if (!(in >> count)) return;
+
+    string dummy;
+    getline(in, dummy); // Съедаем перенос строки после числа count
+
+    // Каждая пара занимает две строки: сначала ключ, затем значение
+    for (size_t i = 0; i < count; ++i) {
+        string k, v;
+        getline(in, k);
+        getline(in, v);
+        insert(k, v);
+    }
+}
+
+// Бинарная сериализация
+void HashTable::serialize_binary(const string& filename) const {
+    ofstream out(filename, ios::binary);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open binary file for writing");
+    }
+
+    out.write(reinterpret_cast<const char*>(&size), sizeof(size));
+
+    for (size_t i = 0; i < capacity; ++i) {
+        Node* curr = buckets[i];
+        while (curr != nullptr) {
+            size_t k_len = curr->key.size();
+            out.write(reinterpret_cast<const char*>(&k_len), sizeof(k_len));
+            out.write(curr->key.data(), k_len);
+
+            size_t v_len = curr->value.size();
+            out.write(reinterpret_cast<const char*>(&v_len), sizeof(v_len));
+            out.write(curr->value.data(), v_len);
+
+            curr = curr->next;
+        }
+    }
+}
+
+// Бинарная десериализация
+void HashTable::deserialize_binary(const string& filename) {
+    ifstream in(filename, ios::binary);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open binary file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t k_len = 0;
+        in.read(reinterpret_cast<char*>(&k_len), sizeof(k_len));
+        string k(k_len, '\0');
+        in.read(&k[0], k_len);
+
+        size_t v_len = 0;
+        in.read(reinterpret_cast<char*>(&v_len), sizeof(v_len));
+        string v(v_len, '\0');
+        in.read(&v[0], v_len);
+
+        insert(k, v);
+    }
 }

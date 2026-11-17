@@ -1,6 +1,8 @@
 #include "../h_files/Stack.h"
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -104,4 +106,86 @@ void Stack::print() const {
         curr = curr->next;
     }
     cout << "]\n";
+}
+
+// Текстовая сериализация (записываем от вершины top_node ко дну)
+void Stack::serialize_text(const string& filename) const {
+    ofstream out(filename);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open file for writing");
+    }
+
+    out << size << "\n";
+    Node* curr = top_node;
+    while (curr != nullptr) {
+        out << curr->data << "\n";
+        curr = curr->next;
+    }
+}
+
+// Текстовая десериализация (читаем в вектор и пушим с конца, чтобы сохранить вершину)
+void Stack::deserialize_text(const string& filename) {
+    ifstream in(filename);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    if (!(in >> count)) return;
+
+    string dummy;
+    getline(in, dummy); // Съедаем перенос строки после числа count
+
+    vector<string> temp(count);
+    for (size_t i = 0; i < count; ++i) {
+        getline(in, temp[i]);
+    }
+
+    // Заталкиваем в обратном порядке, чтобы первый элемент файла снова стал вершиной
+    for (size_t i = count; i > 0; --i) {
+        push(temp[i - 1]);
+    }
+}
+
+// Бинарная сериализация
+void Stack::serialize_binary(const string& filename) const {
+    ofstream out(filename, ios::binary);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open binary file for writing");
+    }
+
+    out.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    Node* curr = top_node;
+    while (curr != nullptr) {
+        size_t len = curr->data.size();
+        out.write(reinterpret_cast<const char*>(&len), sizeof(len));
+        out.write(curr->data.data(), len);
+        curr = curr->next;
+    }
+}
+
+// Бинарная десериализация
+void Stack::deserialize_binary(const string& filename) {
+    ifstream in(filename, ios::binary);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open binary file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    vector<string> temp(count);
+    for (size_t i = 0; i < count; ++i) {
+        size_t len = 0;
+        in.read(reinterpret_cast<char*>(&len), sizeof(len));
+        temp[i].resize(len);
+        in.read(&temp[i][0], len);
+    }
+
+    // Заталкиваем в обратном порядке
+    for (size_t i = count; i > 0; --i) {
+        push(temp[i - 1]);
+    }
 }

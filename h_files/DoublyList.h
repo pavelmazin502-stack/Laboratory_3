@@ -39,6 +39,14 @@ public:
     bool find(const std::string& value) const;
     size_t get_size() const;
     void print() const;
+
+    // Текстовая сериализация и десериализация
+    void serialize_text(const std::string& filename) const;
+    void deserialize_text(const std::string& filename);
+
+    // Бинарная сериализация и десериализация
+    void serialize_binary(const std::string& filename) const;
+    void deserialize_binary(const std::string& filename);
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include "../h_files/Queue.h"
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
 
 using namespace std;
 
@@ -101,4 +102,78 @@ void Queue::print() const {
         curr = curr->next;
     }
     cout << "]\n";
+}
+
+// Текстовая сериализация
+void Queue::serialize_text(const string& filename) const {
+    ofstream out(filename);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open file for writing");
+    }
+
+    out << size << "\n";
+    Node* curr = head;
+    while (curr != nullptr) {
+        out << curr->data << "\n";
+        curr = curr->next;
+    }
+}
+
+// Текстовая десериализация
+void Queue::deserialize_text(const string& filename) {
+    ifstream in(filename);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    if (!(in >> count)) return;
+
+    string dummy;
+    getline(in, dummy); // Считываем перенос строки после числа count
+
+    for (size_t i = 0; i < count; ++i) {
+        string val;
+        getline(in, val);
+        push(val);
+    }
+}
+
+// Бинарная сериализация
+void Queue::serialize_binary(const string& filename) const {
+    ofstream out(filename, ios::binary);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open binary file for writing");
+    }
+
+    out.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    Node* curr = head;
+    while (curr != nullptr) {
+        size_t len = curr->data.size();
+        out.write(reinterpret_cast<const char*>(&len), sizeof(len));
+        out.write(curr->data.data(), len);
+        curr = curr->next;
+    }
+}
+
+// Бинарная десериализация
+void Queue::deserialize_binary(const string& filename) {
+    ifstream in(filename, ios::binary);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open binary file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t len = 0;
+        in.read(reinterpret_cast<char*>(&len), sizeof(len));
+
+        string val(len, '\0');
+        in.read(&val[0], len);
+        push(val);
+    }
 }

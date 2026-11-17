@@ -1,6 +1,7 @@
 #include "../h_files/SinglyList.h"
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
 
 using namespace std;
 
@@ -26,7 +27,7 @@ SinglyList::~SinglyList(){
 
 // Конструктор копирования - копия списка other
 SinglyList::SinglyList(const SinglyList& other){
-    head == nullptr;
+    head = nullptr;
     tail = nullptr;
     size = 0;
 
@@ -174,4 +175,69 @@ void SinglyList::print() const {
         curr = curr->next;           
     }
     cout << "]\n";
+}
+
+void SinglyList::serialize_text(const std::string& filename) const {
+    std::ofstream out(filename);
+    if (!out.is_open()) throw std::runtime_error("Cannot open file for writing");
+
+    out << size << "\n";
+    Node* curr = head; // или Node* curr = head
+    while (curr != nullptr) {
+        out << curr->data << "\n";
+        curr = curr->next;
+    }
+}
+
+// Текстовая десериализация
+void SinglyList::deserialize_text(const std::string& filename) {
+    std::ifstream in(filename);
+    if (!in.is_open()) throw std::runtime_error("Cannot open file for reading");
+
+    clear();
+    size_t count = 0;
+    if (!(in >> count)) return;
+
+    string dummy;
+    getline(in, dummy); // Съедаем остаток строки после числа count
+
+    for (size_t i = 0; i < count; ++i) {
+        std::string val;
+        std::getline(in, val);
+        push_back(val); // или push_back(val) — в зависимости от названия метода в твоём классе
+    }
+}
+
+// Бинарная сериализация
+void SinglyList::serialize_binary(const std::string& filename) const {
+    std::ofstream out(filename, std::ios::binary);
+    if (!out.is_open()) throw std::runtime_error("Cannot open binary file for writing");
+
+    out.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    Node* curr = head;
+    while (curr != nullptr) {
+        size_t len = curr->data.size();
+        out.write(reinterpret_cast<const char*>(&len), sizeof(len));
+        out.write(curr->data.data(), len);
+        curr = curr->next;
+    }
+}
+
+//Бинарная десериализация
+void SinglyList::deserialize_binary(const std::string& filename) {
+    std::ifstream in(filename, std::ios::binary);
+    if (!in.is_open()) throw std::runtime_error("Cannot open binary file for reading");
+
+    clear();
+    size_t count = 0;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t len = 0;
+        in.read(reinterpret_cast<char*>(&len), sizeof(len));
+
+        std::string val(len, '\0');
+        in.read(&val[0], len);
+        push_back(val);
+    }
 }

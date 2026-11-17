@@ -32,6 +32,12 @@ public:
     std::string peek() const;
     size_t get_size() const;
     void print() const;
+
+    void serialize_text(const std::string& filename) const;
+    void deserialize_text(const std::string& filename);
+
+    void serialize_binary(const std::string& filename) const;
+    void deserialize_binary(const std::string& filename);
 };
 
 #endif

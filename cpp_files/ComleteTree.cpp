@@ -1,6 +1,9 @@
 #include "../h_files/CompleteTree.h"
 #include <iostream>
 #include <queue> // Необходим для BFS (обхода в ширину)
+#include <vector>
+#include <stdexcept>
+#include <fstream>
 
 using namespace std;
 
@@ -121,6 +124,8 @@ bool CompleteTree::is_complete() const {
         return true;
     }
     
+
+    
     queue<TreeNode*> q;
     q.push(root);
     bool seen_null = false; // Флаг: встречали ли мы отсутствующего потомка
@@ -165,4 +170,102 @@ void CompleteTree::print() const {
         if (curr->right != nullptr) q.push(curr->right);
     }
     cout << "]\n";
+}
+
+// Текстовая сериализация (BFS-обход по уровням)
+void CompleteTree::serialize_text(const string& filename) const {
+    ofstream out(filename);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open file for writing");
+    }
+
+    vector<string> vals;
+    if (root != nullptr) {
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            TreeNode* curr = q.front();
+            q.pop();
+            vals.push_back(curr->val);
+            if (curr->left != nullptr) q.push(curr->left);
+            if (curr->right != nullptr) q.push(curr->right);
+        }
+    }
+
+    out << vals.size() << "\n";
+    for (const auto& v : vals) {
+        out << v << "\n";
+    }
+}
+
+// Текстовая десериализация
+void CompleteTree::deserialize_text(const string& filename) {
+    ifstream in(filename);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    if (!(in >> count)) return;
+
+    string dummy;
+    getline(in, dummy); // Съедаем перенос строки после числа count
+
+    for (size_t i = 0; i < count; ++i) {
+        string v;
+        getline(in, v);
+        insert(v); // Вставка в BFS-порядке точно восстановит исходное дерево
+    }
+}
+
+// Бинарная сериализация
+void CompleteTree::serialize_binary(const string& filename) const {
+    ofstream out(filename, ios::binary);
+    if (!out.is_open()) {
+        throw runtime_error("Cannot open binary file for writing");
+    }
+
+    vector<string> vals;
+    if (root != nullptr) {
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            TreeNode* curr = q.front();
+            q.pop();
+            vals.push_back(curr->val);
+            if (curr->left != nullptr) q.push(curr->left);
+            if (curr->right != nullptr) q.push(curr->right);
+        }
+    }
+
+    size_t count = vals.size();
+    out.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    for (const auto& v : vals) {
+        size_t len = v.size();
+        out.write(reinterpret_cast<const char*>(&len), sizeof(len));
+        out.write(v.data(), len);
+    }
+}
+
+// Бинарная десериализация
+void CompleteTree::deserialize_binary(const string& filename) {
+    ifstream in(filename, ios::binary);
+    if (!in.is_open()) {
+        throw runtime_error("Cannot open binary file for reading");
+    }
+
+    clear();
+    size_t count = 0;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t len = 0;
+        in.read(reinterpret_cast<char*>(&len), sizeof(len));
+
+        string v(len, '\0');
+        in.read(&v[0], len);
+        insert(v);
+    }
 }

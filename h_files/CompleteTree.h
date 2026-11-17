@@ -21,7 +21,7 @@ private:
 
     TreeNode* root; // Корень дерева
 
-    // Приватные вспомогательные методы для Правила трёх
+    // Приватные вспомогательные методы 
     void destroy_tree(TreeNode* node);
     TreeNode* copy_tree(TreeNode* node);
 
@@ -37,6 +37,14 @@ public:
     bool find(const std::string& val) const;           // Поиск значения (TFIND)
     bool is_complete() const;                          // Проверка свойства Complete (TISCOMPLETE)
     void print() const;                                // Печать дерева по уровням (BFS)
+
+    // Текстовая сериализация и десериализация
+    void serialize_text(const std::string& filename) const;
+    void deserialize_text(const std::string& filename);
+
+    // Бинарная сериализация и десериализация
+    void serialize_binary(const std::string& filename) const;
+    void deserialize_binary(const std::string& filename);
 };
 
 #endif // COMPLETE_TREE_H
