@@ -1,0 +1,696 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>lab3_go: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">lab3_go/structures.go (88.5%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package lab3_go
+
+import (
+        "encoding/gob"
+        "encoding/json"
+        "errors"
+        "os"
+)
+
+// ==================== 1. DYNAMIC ARRAY ====================
+type DynamicArray struct {
+        data []string // приватное поле (инкапсуляция)
+}
+
+func NewDynamicArray() *DynamicArray {
+        <span class="cov8" title="1">return &amp;DynamicArray{data: make([]string, 0, 4)}
+</span>}
+
+func (a *DynamicArray) PushBack(val string) {
+        <span class="cov8" title="1">a.data = append(a.data, val)
+</span>}
+
+func (a *DynamicArray) InsertAt(idx int, val string) error {
+        <span class="cov8" title="1">if idx &lt; 0 || idx &gt; len(a.data) </span>{
+                <span class="cov8" title="1">return errors.New("index out of range")
+</span>        }
+        <span class="cov8" title="1">a.data = append(a.data[:idx], append([]string{val}, a.data[idx:]...)...)
+        return nil</span>
+}
+
+func (a *DynamicArray) Get(idx int) (string, error) {
+        <span class="cov8" title="1">if idx &lt; 0 || idx &gt;= len(a.data) </span>{
+                <span class="cov8" title="1">return "", errors.New("index out of range")
+</span>        }
+        <span class="cov8" title="1">return a.data[idx], nil</span>
+}
+
+func (a *DynamicArray) Set(idx int, val string) error {
+        <span class="cov8" title="1">if idx &lt; 0 || idx &gt;= len(a.data) </span>{
+                <span class="cov8" title="1">return errors.New("index out of range")
+</span>        }
+        <span class="cov8" title="1">a.data[idx] = val
+        return nil</span>
+}
+
+func (a *DynamicArray) RemoveAt(idx int) error {
+        <span class="cov8" title="1">if idx &lt; 0 || idx &gt;= len(a.data) </span>{
+                <span class="cov8" title="1">return errors.New("index out of range")
+</span>        }
+        <span class="cov8" title="1">a.data = append(a.data[:idx], a.data[idx+1:]...)
+        return nil</span>
+}
+
+func (a *DynamicArray) Size() int { <span class="cov8" title="1">return len(a.data) }</span>
+
+func (a *DynamicArray) SerializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := json.MarshalIndent(a.data, "", "  ")
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">return os.WriteFile(filename, bytes, 0644)</span>
+}
+
+func (a *DynamicArray) DeserializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := os.ReadFile(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">return json.Unmarshal(bytes, &amp;a.data)</span>
+}
+
+func (a *DynamicArray) SerializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Create(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        return gob.NewEncoder(f).Encode(a.data)</span>
+}
+
+func (a *DynamicArray) DeserializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Open(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        return gob.NewDecoder(f).Decode(&amp;a.data)</span>
+}
+
+// ==================== 2. SINGLY LINKED LIST ====================
+type sNode struct {
+        data string
+        next *sNode
+}
+
+type SinglyList struct {
+        head *sNode
+        tail *sNode
+        size int
+}
+
+func NewSinglyList() *SinglyList { <span class="cov8" title="1">return &amp;SinglyList{} }</span>
+
+func (l *SinglyList) PushFront(val string) {
+        <span class="cov8" title="1">node := &amp;sNode{data: val, next: l.head}
+        l.head = node
+        if l.tail == nil </span>{
+                <span class="cov8" title="1">l.tail = node
+</span>        }
+        <span class="cov8" title="1">l.size++</span>
+}
+
+func (l *SinglyList) PushBack(val string) {
+        <span class="cov8" title="1">node := &amp;sNode{data: val}
+        if l.tail == nil </span>{
+                <span class="cov8" title="1">l.head = node
+                l.tail = node
+</span>        } else {
+                <span class="cov8" title="1">l.tail.next = node
+                l.tail = node
+</span>        }
+        <span class="cov8" title="1">l.size++</span>
+}
+
+func (l *SinglyList) PopFront() error {
+        <span class="cov8" title="1">if l.head == nil </span>{
+                <span class="cov8" title="1">return errors.New("list is empty")
+</span>        }
+        <span class="cov8" title="1">l.head = l.head.next
+        if l.head == nil </span>{
+                <span class="cov8" title="1">l.tail = nil
+</span>        }
+        <span class="cov8" title="1">l.size--
+        return nil</span>
+}
+
+func (l *SinglyList) PopBack() error {
+        <span class="cov8" title="1">if l.head == nil </span>{
+                <span class="cov8" title="1">return errors.New("list is empty")
+</span>        }
+        <span class="cov8" title="1">if l.head == l.tail </span>{
+                <span class="cov8" title="1">return l.PopFront()
+</span>        }
+        <span class="cov8" title="1">curr := l.head
+        for curr.next != l.tail </span>{
+                <span class="cov8" title="1">curr = curr.next
+</span>        }
+        <span class="cov8" title="1">l.tail = curr
+        l.tail.next = nil
+        l.size--
+        return nil</span>
+}
+
+func (l *SinglyList) RemoveByValue(val string) bool {
+        <span class="cov8" title="1">if l.head == nil </span>{
+                <span class="cov8" title="1">return false
+</span>        }
+        <span class="cov8" title="1">if l.head.data == val </span>{
+                <span class="cov0" title="0">_ = l.PopFront()
+                return true
+</span>        }
+        <span class="cov8" title="1">curr := l.head
+        for curr.next != nil &amp;&amp; curr.next.data != val </span>{
+                <span class="cov8" title="1">curr = curr.next
+</span>        }
+        <span class="cov8" title="1">if curr.next == nil </span>{
+                <span class="cov8" title="1">return false
+</span>        }
+        <span class="cov8" title="1">if curr.next == l.tail </span>{
+                <span class="cov0" title="0">l.tail = curr
+</span>        }
+        <span class="cov8" title="1">curr.next = curr.next.next
+        l.size--
+        return true</span>
+}
+
+func (l *SinglyList) Find(val string) bool {
+        <span class="cov8" title="1">for curr := l.head; curr != nil; curr = curr.next </span>{
+                <span class="cov8" title="1">if curr.data == val </span>{
+                        <span class="cov8" title="1">return true
+</span>                }
+        }
+        <span class="cov8" title="1">return false</span>
+}
+
+func (l *SinglyList) Size() int { <span class="cov8" title="1">return l.size }</span>
+
+func (l *SinglyList) toSlice() []string {
+        <span class="cov8" title="1">res := make([]string, 0, l.size)
+        for curr := l.head; curr != nil; curr = curr.next </span>{
+                <span class="cov8" title="1">res = append(res, curr.data)
+</span>        }
+        <span class="cov8" title="1">return res</span>
+}
+
+func (l *SinglyList) SerializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := json.MarshalIndent(l.toSlice(), "", "  ")
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">return os.WriteFile(filename, bytes, 0644)</span>
+}
+
+func (l *SinglyList) DeserializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := os.ReadFile(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">var items []string
+        if err := json.Unmarshal(bytes, &amp;items); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">l.head, l.tail, l.size = nil, nil, 0
+        for _, v := range items </span>{
+                <span class="cov8" title="1">l.PushBack(v)
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (l *SinglyList) SerializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Create(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        return gob.NewEncoder(f).Encode(l.toSlice())</span>
+}
+
+func (l *SinglyList) DeserializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Open(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        var items []string
+        if err := gob.NewDecoder(f).Decode(&amp;items); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">l.head, l.tail, l.size = nil, nil, 0
+        for _, v := range items </span>{
+                <span class="cov8" title="1">l.PushBack(v)
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ==================== 3. DOUBLY LINKED LIST ====================
+type dNode struct {
+        data string
+        prev *dNode
+        next *dNode
+}
+
+type DoublyList struct {
+        head *dNode
+        tail *dNode
+        size int
+}
+
+func NewDoublyList() *DoublyList { <span class="cov8" title="1">return &amp;DoublyList{} }</span>
+
+func (l *DoublyList) PushFront(val string) {
+        <span class="cov8" title="1">node := &amp;dNode{data: val, next: l.head}
+        if l.head != nil </span>{
+                <span class="cov8" title="1">l.head.prev = node
+</span>        } else {
+                <span class="cov8" title="1">l.tail = node
+</span>        }
+        <span class="cov8" title="1">l.head = node
+        l.size++</span>
+}
+
+func (l *DoublyList) PushBack(val string) {
+        <span class="cov8" title="1">node := &amp;dNode{data: val, prev: l.tail}
+        if l.tail != nil </span>{
+                <span class="cov8" title="1">l.tail.next = node
+</span>        } else {
+                <span class="cov8" title="1">l.head = node
+</span>        }
+        <span class="cov8" title="1">l.tail = node
+        l.size++</span>
+}
+
+func (l *DoublyList) PopFront() error {
+        <span class="cov8" title="1">if l.head == nil </span>{
+                <span class="cov8" title="1">return errors.New("list is empty")
+</span>        }
+        <span class="cov8" title="1">l.head = l.head.next
+        if l.head != nil </span>{
+                <span class="cov8" title="1">l.head.prev = nil
+</span>        } else {
+                <span class="cov8" title="1">l.tail = nil
+</span>        }
+        <span class="cov8" title="1">l.size--
+        return nil</span>
+}
+
+func (l *DoublyList) PopBack() error {
+        <span class="cov8" title="1">if l.tail == nil </span>{
+                <span class="cov8" title="1">return errors.New("list is empty")
+</span>        }
+        <span class="cov8" title="1">l.tail = l.tail.prev
+        if l.tail != nil </span>{
+                <span class="cov8" title="1">l.tail.next = nil
+</span>        } else {
+                <span class="cov0" title="0">l.head = nil
+</span>        }
+        <span class="cov8" title="1">l.size--
+        return nil</span>
+}
+
+func (l *DoublyList) Find(val string) bool {
+        <span class="cov8" title="1">for curr := l.head; curr != nil; curr = curr.next </span>{
+                <span class="cov8" title="1">if curr.data == val </span>{
+                        <span class="cov8" title="1">return true
+</span>                }
+        }
+        <span class="cov8" title="1">return false</span>
+}
+
+func (l *DoublyList) Size() int { <span class="cov8" title="1">return l.size }</span>
+
+func (l *DoublyList) toSlice() []string {
+        <span class="cov8" title="1">res := make([]string, 0, l.size)
+        for curr := l.head; curr != nil; curr = curr.next </span>{
+                <span class="cov8" title="1">res = append(res, curr.data)
+</span>        }
+        <span class="cov8" title="1">return res</span>
+}
+
+func (l *DoublyList) SerializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := json.MarshalIndent(l.toSlice(), "", "  ")
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">return os.WriteFile(filename, bytes, 0644)</span>
+}
+
+func (l *DoublyList) DeserializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := os.ReadFile(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">var items []string
+        if err := json.Unmarshal(bytes, &amp;items); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">l.head, l.tail, l.size = nil, nil, 0
+        for _, v := range items </span>{
+                <span class="cov8" title="1">l.PushBack(v)
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (l *DoublyList) SerializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Create(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        return gob.NewEncoder(f).Encode(l.toSlice())</span>
+}
+
+func (l *DoublyList) DeserializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Open(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        var items []string
+        if err := gob.NewDecoder(f).Decode(&amp;items); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">l.head, l.tail, l.size = nil, nil, 0
+        for _, v := range items </span>{
+                <span class="cov8" title="1">l.PushBack(v)
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ==================== 4. STACK (Паттерн Адаптер) ====================
+type Stack struct {
+        list SinglyList
+}
+
+func NewStack() *Stack               { <span class="cov8" title="1">return &amp;Stack{} }</span>
+func (s *Stack) Push(val string)     { <span class="cov8" title="1">s.list.PushFront(val) }</span>
+func (s *Stack) Pop() error          { <span class="cov8" title="1">return s.list.PopFront() }</span>
+func (s *Stack) Size() int           { <span class="cov8" title="1">return s.list.Size() }</span>
+func (s *Stack) Peek() (string, error) {
+        <span class="cov8" title="1">if s.list.head == nil </span>{
+                <span class="cov8" title="1">return "", errors.New("stack is empty")
+</span>        }
+        <span class="cov8" title="1">return s.list.head.data, nil</span>
+}
+
+func (s *Stack) SerializeText(fn string) error { <span class="cov8" title="1">return s.list.SerializeText(fn) }</span>
+func (s *Stack) DeserializeText(fn string) error {
+        <span class="cov8" title="1">bytes, err := os.ReadFile(fn)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">var items []string
+        if err := json.Unmarshal(bytes, &amp;items); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">s.list = SinglyList{}
+        for i := len(items) - 1; i &gt;= 0; i-- </span>{
+                <span class="cov8" title="1">s.Push(items[i])
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (s *Stack) SerializeBinary(fn string) error { <span class="cov8" title="1">return s.list.SerializeBinary(fn) }</span>
+func (s *Stack) DeserializeBinary(fn string) error {
+        <span class="cov8" title="1">f, err := os.Open(fn)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        var items []string
+        if err := gob.NewDecoder(f).Decode(&amp;items); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">s.list = SinglyList{}
+        for i := len(items) - 1; i &gt;= 0; i-- </span>{
+                <span class="cov8" title="1">s.Push(items[i])
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ==================== 5. QUEUE (Паттерн Адаптер) ====================
+type Queue struct {
+        list DoublyList
+}
+
+func NewQueue() *Queue               { <span class="cov8" title="1">return &amp;Queue{} }</span>
+func (q *Queue) Push(val string)     { <span class="cov8" title="1">q.list.PushBack(val) }</span>
+func (q *Queue) Pop() error          { <span class="cov8" title="1">return q.list.PopFront() }</span>
+func (q *Queue) Size() int           { <span class="cov8" title="1">return q.list.Size() }</span>
+func (q *Queue) Peek() (string, error) {
+        <span class="cov8" title="1">if q.list.head == nil </span>{
+                <span class="cov8" title="1">return "", errors.New("queue is empty")
+</span>        }
+        <span class="cov8" title="1">return q.list.head.data, nil</span>
+}
+
+func (q *Queue) SerializeText(fn string) error     { <span class="cov8" title="1">return q.list.SerializeText(fn) }</span>
+func (q *Queue) DeserializeText(fn string) error   { <span class="cov8" title="1">return q.list.DeserializeText(fn) }</span>
+func (q *Queue) SerializeBinary(fn string) error   { <span class="cov8" title="1">return q.list.SerializeBinary(fn) }</span>
+func (q *Queue) DeserializeBinary(fn string) error { <span class="cov8" title="1">return q.list.DeserializeBinary(fn) }</span>
+
+// ==================== 6. HASH TABLE (Метод цепочек) ====================
+type hashNode struct {
+        key   string
+        value string
+        next  *hashNode
+}
+
+type HashTable struct {
+        buckets  []*hashNode
+        capacity int
+        size     int
+}
+
+func NewHashTable() *HashTable {
+        <span class="cov8" title="1">cap := 128
+        return &amp;HashTable{
+                buckets:  make([]*hashNode, cap),
+                capacity: cap,
+</span>        }
+}
+
+func (h *HashTable) hashFunction(key string) int {
+        <span class="cov8" title="1">var hash uint64 = 0
+        for i := 0; i &lt; len(key); i++ </span>{
+                <span class="cov8" title="1">hash = hash*31 + uint64(key[i])
+</span>        }
+        <span class="cov8" title="1">return int(hash % uint64(h.capacity))</span>
+}
+
+func (h *HashTable) Insert(key, value string) {
+        <span class="cov8" title="1">idx := h.hashFunction(key)
+        curr := h.buckets[idx]
+        for curr != nil </span>{
+                <span class="cov8" title="1">if curr.key == key </span>{
+                        <span class="cov8" title="1">curr.value = value
+                        return
+</span>                }
+                <span class="cov0" title="0">curr = curr.next</span>
+        }
+        <span class="cov8" title="1">h.buckets[idx] = &amp;hashNode{key: key, value: value, next: h.buckets[idx]}
+        h.size++</span>
+}
+
+func (h *HashTable) Get(key string) (string, error) {
+        <span class="cov8" title="1">idx := h.hashFunction(key)
+        curr := h.buckets[idx]
+        for curr != nil </span>{
+                <span class="cov8" title="1">if curr.key == key </span>{
+                        <span class="cov8" title="1">return curr.value, nil
+</span>                }
+                <span class="cov0" title="0">curr = curr.next</span>
+        }
+        <span class="cov8" title="1">return "", errors.New("key not found")</span>
+}
+
+func (h *HashTable) Contains(key string) bool {
+        <span class="cov8" title="1">_, err := h.Get(key)
+        return err == nil
+</span>}
+
+func (h *HashTable) Remove(key string) bool {
+        <span class="cov8" title="1">idx := h.hashFunction(key)
+        curr := h.buckets[idx]
+        var prev *hashNode
+        for curr != nil </span>{
+                <span class="cov8" title="1">if curr.key == key </span>{
+                        <span class="cov8" title="1">if prev == nil </span>{
+                                <span class="cov8" title="1">h.buckets[idx] = curr.next
+</span>                        } else {
+                                <span class="cov0" title="0">prev.next = curr.next
+</span>                        }
+                        <span class="cov8" title="1">h.size--
+                        return true</span>
+                }
+                <span class="cov0" title="0">prev = curr
+                curr = curr.next</span>
+        }
+        <span class="cov8" title="1">return false</span>
+}
+
+func (h *HashTable) Size() int { <span class="cov8" title="1">return h.size }</span>
+
+func (h *HashTable) toMap() map[string]string {
+        <span class="cov8" title="1">m := make(map[string]string, h.size)
+        for i := 0; i &lt; h.capacity; i++ </span>{
+                <span class="cov8" title="1">for curr := h.buckets[i]; curr != nil; curr = curr.next </span>{
+                        <span class="cov8" title="1">m[curr.key] = curr.value
+</span>                }
+        }
+        <span class="cov8" title="1">return m</span>
+}
+
+func (h *HashTable) SerializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := json.MarshalIndent(h.toMap(), "", "  ")
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">return os.WriteFile(filename, bytes, 0644)</span>
+}
+
+func (h *HashTable) DeserializeText(filename string) error {
+        <span class="cov8" title="1">bytes, err := os.ReadFile(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">var m map[string]string
+        if err := json.Unmarshal(bytes, &amp;m); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">h.buckets = make([]*hashNode, h.capacity)
+        h.size = 0
+        for k, v := range m </span>{
+                <span class="cov8" title="1">h.Insert(k, v)
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (h *HashTable) SerializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Create(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        return gob.NewEncoder(f).Encode(h.toMap())</span>
+}
+
+func (h *HashTable) DeserializeBinary(filename string) error {
+        <span class="cov8" title="1">f, err := os.Open(filename)
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">defer f.Close()
+        var m map[string]string
+        if err := gob.NewDecoder(f).Decode(&amp;m); err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+        <span class="cov8" title="1">h.buckets = make([]*hashNode, h.capacity)
+        h.size = 0
+        for k, v := range m </span>{
+                <span class="cov8" title="1">h.Insert(k, v)
+</span>        }
+        <span class="cov8" title="1">return nil</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
