@@ -47,6 +47,20 @@ public:
     // Бинарная сериализация и десериализация
     void serialize_binary(const std::string& filename) const;
     void deserialize_binary(const std::string& filename);
+
+    // вставка до/после 
+    bool insert_before(const std::string& target, const std::string& value);
+    bool insert_after(const std::string& target, const std::string& value);
+
+    //  удаление до/после 
+    bool remove_before(const std::string& target);
+    bool remove_after(const std::string& target);
+
+    // разные способы чтения
+    std::string get(size_t index) const;
+    std::string front() const;
+    std::string back() const;
+    void print_reverse() const;
 };
 
 #endif
