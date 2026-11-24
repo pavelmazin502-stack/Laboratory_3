@@ -237,3 +237,124 @@ void DoublyList::deserialize_binary(const std::string& filename) {
         push_back(val);
     }
 }
+
+// === ДОБАВЛЕНО ===
+bool DoublyList::insert_before(const std::string& target, const std::string& value) {
+    Node* curr = head;
+    while (curr != nullptr && curr->data != target) {
+        curr = curr->next;
+    }
+    if (curr == nullptr) {
+        return false;
+    }
+    if (curr == head) {
+        push_front(value);
+        return true;
+    }
+    Node* node = new Node(value);
+    node->prev = curr->prev;
+    node->next = curr;
+    curr->prev->next = node;
+    curr->prev = node;
+    size++;
+    return true;
+}
+
+bool DoublyList::insert_after(const std::string& target, const std::string& value) {
+    Node* curr = head;
+    while (curr != nullptr && curr->data != target) {
+        curr = curr->next;
+    }
+    if (curr == nullptr) {
+        return false;
+    }
+    if (curr == tail) {
+        push_back(value);
+        return true;
+    }
+    Node* node = new Node(value);
+    node->prev = curr;
+    node->next = curr->next;
+    curr->next->prev = node;
+    curr->next = node;
+    size++;
+    return true;
+}
+
+bool DoublyList::remove_before(const std::string& target) {
+    Node* curr = head;
+    while (curr != nullptr && curr->data != target) {
+        curr = curr->next;
+    }
+    if (curr == nullptr || curr->prev == nullptr) {
+        return false;
+    }
+    Node* to_delete = curr->prev;
+    if (to_delete == head) {
+        pop_front();
+        return true;
+    }
+    to_delete->prev->next = curr;
+    curr->prev = to_delete->prev;
+    delete to_delete;
+    size--;
+    return true;
+}
+
+bool DoublyList::remove_after(const std::string& target) {
+    Node* curr = head;
+    while (curr != nullptr && curr->data != target) {
+        curr = curr->next;
+    }
+    if (curr == nullptr || curr->next == nullptr) {
+        return false;
+    }
+    Node* to_delete = curr->next;
+    if (to_delete == tail) {
+        pop_back();
+        return true;
+    }
+    curr->next = to_delete->next;
+    to_delete->next->prev = curr;
+    delete to_delete;
+    size--;
+    return true;
+}
+
+std::string DoublyList::get(size_t index) const {
+    if (index >= size) {
+        throw std::out_of_range("Index out of range");
+    }
+    Node* curr = head;
+    for (size_t i = 0; i < index; ++i) {
+        curr = curr->next;
+    }
+    return curr->data;
+}
+
+std::string DoublyList::front() const {
+    if (head == nullptr) {
+        throw std::underflow_error("List is empty");
+    }
+    return head->data;
+}
+
+std::string DoublyList::back() const {
+    if (tail == nullptr) {
+        throw std::underflow_error("List is empty");
+    }
+    return tail->data;
+}
+
+void DoublyList::print_reverse() const {
+    Node* curr = tail;
+    std::cout << "[";
+    while (curr != nullptr) {
+        std::cout << curr->data;
+        if (curr->prev != nullptr) {
+            std::cout << " <-> ";
+        }
+        curr = curr->prev;
+    }
+    std::cout << "]\n";
+}

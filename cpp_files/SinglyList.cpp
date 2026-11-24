@@ -5,157 +5,252 @@
 
 using namespace std;
 
-void SinglyList::clear(){
-    while (head != nullptr){
+void SinglyList::clear() {
+    while (head != nullptr) {
         Node* temp = head; // Сохранение указателя на текущий узел
-        head = head -> next;
+        head = head->next;
         delete temp;
     }
     tail = nullptr;
     size = 0;
 }
 
-SinglyList::SinglyList(){
+SinglyList::SinglyList() {
     head = nullptr;
     tail = nullptr;
     size = 0;
 }
 
-SinglyList::~SinglyList(){
+SinglyList::~SinglyList() {
     clear();
 }
 
 // Конструктор копирования - копия списка other
-SinglyList::SinglyList(const SinglyList& other){
+SinglyList::SinglyList(const SinglyList& other) {
     head = nullptr;
     tail = nullptr;
     size = 0;
 
     Node* curr = other.head;
-    while (curr != nullptr){
-        push_back(curr -> data);
-        curr = curr -> next;
+    while (curr != nullptr) {
+        push_back(curr->data);
+        curr = curr->next;
     }
 }
+
 // Оператор присваивания, перезаписываем текущий список копией списка other
-SinglyList& SinglyList::operator=(const SinglyList& other){ // Конструктор копирования, для создания локальной копии other из какого либо класса
-    if (this == &other){
+SinglyList& SinglyList::operator=(const SinglyList& other) {
+    if (this == &other) {
         return *this; // Защита от самоприсваивания
     }
 
     clear();
 
     Node* curr = other.head;
-    while (curr != nullptr){
-        push_back(curr -> data);
-        curr = curr -> next;
+    while (curr != nullptr) {
+        push_back(curr->data);
+        curr = curr->next;
     }
     return *this; // Возврат текущего объекта
 }
 
-void SinglyList::push_front(const string& value){ // Добавление в голову
-    Node* node = new Node(value);
-    node -> next = head; // новый узел ссылается на бывшую голову
+void SinglyList::push_front(const string& value) { // Добавление в голову
+    Node* node = new Node{value, head}; // новый узел ссылается на бывшую голову
     head = node;
 
-    if (tail == nullptr){
+    if (tail == nullptr) {
         tail = node;
     }
     size++;
 }
 
-// Добавление элемента в хвост
-void SinglyList::push_back(const string& value){
-    Node* node = new Node(value);
 
-    if (tail == nullptr){ // Если список пуст, то элемент становится и головой и хвостом
+void SinglyList::push_back(const string& value) { // Добавление элемента в хвост
+    Node* node = new Node{value, nullptr};
+
+    if (tail == nullptr) { // Если список пуст, то элемент становится и головой и хвостом
         head = node;
         tail = node;
     } else {
-        tail -> next = node;
+        tail->next = node;
         tail = node;
     }
     size++;
 }
+
+// вставка ДО целевого элемента
+bool SinglyList::insert_before(const string& target, const string& value) {
+    if (head == nullptr) {
+        return false;
+    }
+    if (head->data == target) {
+        push_front(value);
+        return true;
+    }
+    Node* curr = head;
+    while (curr->next != nullptr && curr->next->data != target) {
+        curr = curr->next;
+    }
+    if (curr->next == nullptr) {
+        return false;
+    }
+    curr->next = new Node{value, curr->next};
+    size++;
+    return true;
+}
+
+// вставка ПОСЛЕ целевого элемента
+bool SinglyList::insert_after(const string& target, const string& value) {
+    Node* curr = head;
+    while (curr != nullptr && curr->data != target) {
+        curr = curr->next;
+    }
+    if (curr == nullptr) {
+        return false;
+    }
+    Node* node = new Node{value, curr->next};
+    curr->next = node;
+    if (curr == tail) {
+        tail = node;
+    }
+    size++;
+    return true;
+}
+
 // Удаление первого элемента из головы
-void SinglyList::pop_front(){
-    // Для начала обработка всех исключений (например пустой список)
-    if (head == nullptr){
+void SinglyList::pop_front() {
+    if (head == nullptr) {
         throw underflow_error("List is empty"); // Список пуст
     }
 
     Node* temp = head;
-    head = head -> next; // Сдвиг головы на следующий узел
+    head = head->next; // Сдвиг головы на следующий узел
 
-    if (head == nullptr){
+    if (head == nullptr) {
         tail = nullptr;
     }
     delete temp;
     size--;
 }
-// Удаление последнего элемента из массива
-void SinglyList::pop_back(){   
-    if (head == nullptr){
+
+// Удаление последнего элемента из списка
+void SinglyList::pop_back() {
+    if (head == nullptr) {
         throw underflow_error("List is empty");
-    }  
-    if (head == tail){ // если голова и хвост указывают на один узел то
+    }
+    if (head == tail) { // если голова и хвост указывают на один узел
         delete head;
         head = nullptr;
         tail = nullptr;
         size = 0;
         return;
     }
-    Node* curr = head;  // Ищем последний узел
-    while (curr -> next != tail){
+    Node* curr = head; // Ищем предпоследний узел
+    while (curr->next != tail) {
         curr = curr->next;
     }
 
     delete tail;
-    tail = curr; // Перепривязка узлов (предпоследний узел, является новым хвостом)
-    tail -> next = nullptr;
+    tail = curr; // Перепривязка узлов (предпоследний узел является новым хвостом)
+    tail->next = nullptr;
     size--;
 }
 
-void SinglyList::remove_by_value(const string& value) {
-    if (head == nullptr) {            
-        return;
+// удаление ДО целевого элемента
+bool SinglyList::remove_before(const string& target) {
+    if (head == nullptr || head->next == nullptr || head->data == target) {
+        return false;
+    }
+    if (head->next->data == target) {
+        pop_front();
+        return true;
+    }
+    Node* prev = head;
+    while (prev->next->next != nullptr && prev->next->next->data != target) {
+        prev = prev->next;
+    }
+    if (prev->next->next == nullptr) {
+        return false;
+    }
+    Node* to_delete = prev->next;
+    prev->next = to_delete->next;
+    delete to_delete;
+    size--;
+    return true;
+}
+
+// Удаление ПОСЛЕ целевого элемента 
+bool SinglyList::remove_after(const string& target) {
+    Node* curr = head;
+    while (curr != nullptr && curr->data != target) {
+        curr = curr->next;
+    }
+    if (curr == nullptr || curr->next == nullptr) {
+        return false;
+    }
+    Node* to_delete = curr->next;
+    curr->next = to_delete->next;
+    if (to_delete == tail) {
+        tail = curr;
+    }
+    delete to_delete;
+    size--;
+    return true;
+}
+
+bool SinglyList::remove_by_value(const string& value) {
+    if (head == nullptr) {
+        return false;
     }
 
-    if (head->data == value) {// Если искомое значение находится в голове
-        pop_front(); 
-        return;
+    if (head->data == value) { // Если искомое значение находится в голове
+        pop_front();
+        return true;
     }
 
-    Node* curr = head;// Ищем узел, стоящий ПЕРЕД удаляемым
+    Node* curr = head; // Ищем узел, стоящий ПЕРЕД удаляемым
     while (curr->next != nullptr && curr->next->data != value) {
         curr = curr->next;
     }
 
-    if (curr->next == nullptr) { 
-        return;
+    if (curr->next == nullptr) {
+        return false;
     }
 
-    Node* to_delete = curr->next;// Запоминаем адрес удаляемого узла
+    Node* to_delete = curr->next; // Запоминаем адрес удаляемого узла
     curr->next = to_delete->next;
 
-    if (to_delete == tail) {         
-        tail = curr;                  
+    if (to_delete == tail) {
+        tail = curr;
     }
 
-    delete to_delete;               
-    size--;                           
+    delete to_delete;
+    size--;
+    return true;
 }
 
 // Поиск значения в списке за O(n)
 bool SinglyList::find(const string& value) const {
-    Node* curr = head;                
-    while (curr != nullptr) {         
+    Node* curr = head;
+    while (curr != nullptr) {
         if (curr->data == value) {
             return true;
         }
-        curr = curr->next;// Переходим к следующему узлу
+        curr = curr->next; // Переходим к следующему узлу
     }
-    return false;                   
+    return false;
+}
+
+// Чтение головы и проверка на пустоту
+string SinglyList::front() const {
+    if (head == nullptr) {
+        throw underflow_error("List is empty");
+    }
+    return head->data;
+}
+
+bool SinglyList::empty() const {
+    return size == 0;
 }
 
 // Получение текущего количества элементов за O(1)
@@ -165,14 +260,14 @@ size_t SinglyList::get_size() const {
 
 // Вывод содержимого списка
 void SinglyList::print() const {
-    Node* curr = head;              
+    Node* curr = head;
     cout << "[";
     while (curr != nullptr) {
-        cout << curr->data;// Выводим поле data текущего узла
-        if (curr->next != nullptr) {  
+        cout << curr->data; // Выводим поле data текущего узла
+        if (curr->next != nullptr) {
             cout << " -> ";
         }
-        curr = curr->next;           
+        curr = curr->next;
     }
     cout << "]\n";
 }
@@ -182,7 +277,7 @@ void SinglyList::serialize_text(const std::string& filename) const {
     if (!out.is_open()) throw std::runtime_error("Cannot open file for writing");
 
     out << size << "\n";
-    Node* curr = head; // или Node* curr = head
+    Node* curr = head;
     while (curr != nullptr) {
         out << curr->data << "\n";
         curr = curr->next;
@@ -204,7 +299,7 @@ void SinglyList::deserialize_text(const std::string& filename) {
     for (size_t i = 0; i < count; ++i) {
         std::string val;
         std::getline(in, val);
-        push_back(val); // или push_back(val) — в зависимости от названия метода в твоём классе
+        push_back(val);
     }
 }
 
@@ -223,7 +318,7 @@ void SinglyList::serialize_binary(const std::string& filename) const {
     }
 }
 
-//Бинарная десериализация
+// Бинарная десериализация
 void SinglyList::deserialize_binary(const std::string& filename) {
     std::ifstream in(filename, std::ios::binary);
     if (!in.is_open()) throw std::runtime_error("Cannot open binary file for reading");
